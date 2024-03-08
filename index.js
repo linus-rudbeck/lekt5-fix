@@ -1,16 +1,14 @@
 const mongodb = require('mongodb')
 const express = require('express')
-const ObjectId = require('mongodb').ObjectId;
 
 const app = express()
 
+// Get all books
 app.get('/Books', async (req, res) => {
     const client = new mongodb.MongoClient("mongodb://localhost")
     await client.connect()
-
     const db = client.db("BooksDB")
 
-    // const dbBooks = await db.collection("Books").find({Pages: 30});
     const dbBooks = await db.collection("Books").find();
 
     const books = []
@@ -19,64 +17,42 @@ app.get('/Books', async (req, res) => {
         books.push(b)
     })
 
-     console.log(books)
-
     res.send(books)
 })
 
-
-
-
-
-app.get('/Books/:id', async (req, res) => {
-
-    const _id = mongodb.ObjectId(req.params.id)
-
+// Add a new book hardcoded
+app.get('/Books/add', async (req, res) => {
     const client = new mongodb.MongoClient("mongodb://localhost")
     await client.connect()
 
-     const db = client.db("BooksDB")
+    const db = client.db("BooksDB")
 
-     db.collection("Books").findOne({_id: ObId}, (err, book) => {
-         res.send(book)
-     }) 
+    const book = {
+        title: "The Hobbit",
+        pages: 300,
+        author: "J.R.R. Tolkien"
+    };
+
+    await db.collection("Books").insertOne(book);
+
+    res.send("Book added")
+});
+
+app.get('/Books/:id', async (req, res) => {
+
+    // Get the id from the URL (don't forget "new")
+    const _id = new mongodb.ObjectId(req.params.id)
+
+    const client = new mongodb.MongoClient("mongodb://localhost")
+    await client.connect()
+    const db = client.db("BooksDB")
+
+    const book = await db.collection("Books").findOne({ _id })
+
+    res.send(book)
 })
-
-
-
-
-
-
-// app.get('/Books/:id', async (req, res) => {
-//     const client = new mongodb.MongoClient("mongodb://localhost")
-//     await client.connect()
-
-//     const db = client.db("BooksDB")
-
-//     // const dbBooks = await db.collection("Books").find({Pages: 30});
-//     const dbBooks = await db.collection("Books").find({_id: new ObjectId(req.params.id)});
-
-//     console.log('dbBooks: ',dbBooks)
-
-//     const books = []
-
-//     await dbBooks.forEach(b => {
-//         books.push(b)
-//     })
-
-//     console.log(books)
-
-//     res.send(books)
-// })
-
-
-
-
-
 
 // http://localhost:8000/
-
 app.listen(8000, () => {
-    console.log("http://localhost:8001/")
+    console.log("http://localhost:8000/")
 })
-
